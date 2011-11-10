@@ -24,6 +24,7 @@ FLAGS.AddFlag('u', 'username', 'The Google username to use')
 FLAGS.AddFlag('p', 'password', 'The Google password to use (interactive prompt if unspecified)', '')
 FLAGS.AddFlag('y', 'privacy', 'The access level for the album ("private" or "public")', 'public')
 FLAGS.AddFlag('o', 'confirm', 'Confirm upload for every album', 'true')
+FLAGS.AddFlag('s', 'skip', 'Skip first <skip> albums', '0')
 FLAGS.AddFlag('g', 'gallery_prefix', 'Prefix for gallery photos',
     '/var/local/g2data')
 
@@ -119,6 +120,8 @@ def main(argv):
       confirm = True
   else:
       confirm = False
+      
+  skip_first = FLAGS.skip
 
   try:
     albums = []
@@ -143,7 +146,11 @@ def main(argv):
 
       photos_by_album[movie.parent_id()].append(movie)
 
+    album_number = 0
+    
     for album in albums:
+      album_number += 1
+    
       if album.id() not in photos_by_album:
         continue
 
@@ -151,15 +158,22 @@ def main(argv):
         upload_album = False
         confirmed = False
         while confirmed == False:
-          confirm_input = raw_input('Upload Album "%s"? [y/N]' % album.title().encode(default_encoding, 'replace')).lower()
+          confirm_input = raw_input('Upload Album "%s"? [y/N/a]' % album.title().encode(default_encoding, 'replace')).lower()
           if confirm_input == 'n' or confirm_input == '':
             confirmed = True
           elif confirm_input == 'y':
             upload_album = True
             confirmed = True
+          elif confirm_input == 'a':
+            confirmed = True
+            upload_album = True
+            confirm = False
 
         if upload_album != True:
           continue
+
+      if skip_first<=album_number:
+        continue      	
 
       privacy = FLAGS.privacy.lower()
       if privacy != 'public':
