@@ -146,10 +146,7 @@ def main(argv):
 
       photos_by_album[movie.parent_id()].append(movie)
 
-    album_number = 0
-    
-    for album in albums:
-      album_number += 1
+    for album in albums[skip_first:]:
     
       if album.id() not in photos_by_album:
         continue
@@ -171,9 +168,6 @@ def main(argv):
 
         if upload_album != True:
           continue
-
-      if skip_first<=album_number:
-        continue      	
 
       privacy = FLAGS.privacy.lower()
       if privacy != 'public':
